@@ -6,20 +6,39 @@
   "scripts": {
     "start": "node dist/index.js",
     "dev": "nodemon src/server.ts -e js,ts,graphql",
-    "build": "tsc"
+    "build": "tsc",
+    "test": "yarn gen:schema && jest",
+    "gen:schema": "ts-node src/__utils/genSchema.ts",
+    "gen:types": "apollo client:codegen --addTypename --localSchemaFile=src/schema/schema.graphql --globalTypesFile=src/types/graphqlGlobalTypesFile.ts --includes=src/__tests__/**/*.ts --outputFlat --tagName=gql --target=typescript src/types"
   },
   "dependencies": {
     "apollo-server": "^2.17.0",
     "dotenv": "^8.2.0",
+    "fs-extra": "^9.0.1",
     "graphql": "^15.3.0",
     "graphql-tools": "^6.2.2",
     "mongoose": "^5.10.5"
   },
   "devDependencies": {
+    "@babel/core": "^7.11.6",
+    "@babel/preset-env": "^7.11.5",
+    "@babel/preset-typescript": "^7.10.4",
+    "@types/fs-extra": "^9.0.1",
+    "@types/jest": "^26.0.14",
     "@types/mongoose": "^5.7.36",
     "@types/node": "^14.10.1",
+    "apollo": "^2.30.3",
+    "apollo-server-testing": "^2.17.0",
+    "babel-jest": "^26.3.0",
+    "husky": "^4.3.0",
+    "jest": "^26.4.2",
     "nodemon": "^2.0.4",
     "ts-node": "^9.0.0",
     "typescript": "^4.0.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "tsc --noEmit"
+    }
   }
 }
