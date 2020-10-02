@@ -5,7 +5,7 @@ jobs:
   test:
     steps:
       - checkout
-      - node/install-packages
+      - node/install-packages:
         pkg-manager: yarn
       - run:
         name: Run tests
