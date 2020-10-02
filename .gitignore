@@ -18,6 +18,7 @@ public/css/main.css
 
 # Coverage reports
 coverage
+test-results
 
 # API keys and secrets
 .env
@@ -36,6 +37,3 @@ Thumbs.db
 
 # Ignore built ts files
 dist
-
-# ignore yarn.lock
-yarn.lock

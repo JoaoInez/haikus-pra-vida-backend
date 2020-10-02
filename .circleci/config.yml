@@ -1,0 +1,19 @@
+version: 2.1
+orbs:
+  node: "circleci/node@4.1.0"
+jobs:
+  test:
+    executor: node/default
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: yarn
+      - run: yarn test
+      - store_test_results:
+          path: ./test-results
+      - store_artifacts:
+          path: ./coverage
+workflows:
+  test-api:
+    jobs:
+      - test
