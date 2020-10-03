@@ -1,6 +1,6 @@
 import { outputFile, readFile } from "fs-extra";
 
-readFile(__dirname.replace("/__utils", "/schema/schema.graphql"), "utf-8")
+readFile(__dirname.replace("/src/__utils", "/schema/schema.graphql"), "utf-8")
   .then((data) =>
     outputFile(
       __dirname.replace("/__utils", "/__mocks__/generated.ts"),

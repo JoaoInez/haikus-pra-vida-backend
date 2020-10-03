@@ -4,7 +4,15 @@ import resolvers from "./resolvers";
 
 export default () => {
   const typeDefs = gql(
-    readFileSync(__dirname.concat("/schema/schema.graphql"), "utf8")
+    process.env.NODE_ENV === "production"
+      ? readFileSync(
+          __dirname.replace("/dist", "/schema/schema.graphql"),
+          "utf8"
+        )
+      : readFileSync(
+          __dirname.replace("/src", "/schema/schema.graphql"),
+          "utf8"
+        )
   );
 
   return new ApolloServer({ typeDefs, resolvers });
