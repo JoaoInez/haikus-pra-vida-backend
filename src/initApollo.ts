@@ -15,5 +15,5 @@ export default () => {
         )
   );
 
-  return new ApolloServer({ typeDefs, resolvers });
+  return new ApolloServer({ typeDefs, resolvers, introspection: true });
 };
