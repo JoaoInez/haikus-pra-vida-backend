@@ -30,6 +30,9 @@ jobs:
           name: Build docker image
           command: docker build -t $IMAGE_NAME:latest .
       - run:
+          name: Login to DockerHub
+          command: echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+      - run:
           name: Push image to DockerHub
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]
