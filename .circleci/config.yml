@@ -58,6 +58,11 @@ workflows:
       - build-image:
           requires:
             - test-api
+          filters:
+            branches:
+              only:
+                - master
+                - development
       - push-image-latest:
           requires:
             - build-image
@@ -69,4 +74,4 @@ workflows:
             - build-image
           filters:
             branches:
-              ignore: master
+              only: development
