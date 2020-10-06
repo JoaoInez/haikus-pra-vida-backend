@@ -44,6 +44,8 @@ workflows:
     jobs:
       - test-api
       - build-and-push-image:
+          context:
+            - dockerhub-auth
           requires:
             - test-api
           filters:
