@@ -2,18 +2,57 @@ version: 2.1
 orbs:
   node: "circleci/node@4.1.0"
 jobs:
-  test:
+  test-api:
     executor: node/default
     steps:
       - checkout
       - node/install-packages:
           pkg-manager: yarn
-      - run: yarn test
+      - run:
+          name: Run tests
+          command: yarn test
       - store_test_results:
           path: ./test-results
       - store_artifacts:
           path: ./coverage
+  build-and-push-image:
+    docker:
+      - image: circleci/buildpack-deps:stretch
+        environment:
+          IMAGE_NAME: joaoinez/haikus-pra-vida-backend
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build docker image
+          command: docker build -t $IMAGE_NAME:latest .
+      - run:
+          name: Login to DockerHub
+          command: echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+      - run:
+          name: Push image to DockerHub
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]
+            then
+              docker push $IMAGE_NAME:latest
+            else
+              docker tag $IMAGE_NAME:latest $IMAGE_NAME:development
+              docker push $IMAGE_NAME:development
+            fi
 workflows:
-  test-api:
+  test-build-and-push:
     jobs:
-      - test
+      - test-api
+      - build-and-push-image:
+          context:
+            - dockerhub-auth
+          requires:
+            - test-api
+          filters:
+            branches:
+              only:
+                - master
+                - development
