@@ -1,8 +1,14 @@
 version: 2.1
 orbs:
   node: "circleci/node@4.1.0"
+executors:
+  shared-docker:
+    environment:
+      IMAGE_NAME: joaoinez/haikus-pra-vida-backend
+    docker:
+      - image: circleci/buildpack-deps:stretch
 jobs:
-  test:
+  test-api:
     executor: node/default
     steps:
       - checkout
@@ -13,7 +19,54 @@ jobs:
           path: ./test-results
       - store_artifacts:
           path: ./coverage
+  build-image:
+    executor: shared-docker
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: docker build -t $IMAGE_NAME:latest .
+      - run: docker save -o image.tar $IMAGE_NAME
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./image.tar
+  push-image-latest:
+    executor: shared-docker
+    setps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - setup_remote_docker
+      - run: docker load -i /tmp/workspace/image.tar
+      - run: |
+          echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+          docker push $IMAGE_NAME:latest
+  push-image-branch:
+    executor: shared-docker
+    setps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - setup_remote_docker
+      - run: docker load -i /tmp/workspace/image.tar
+      - run: |
+          echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+          docker tag $IMAGE_NAME:latest $IMAGE_NAME:$CIRCLE_BRANCH
+          docker push $IMAGE_NAME:$CIRCLE_BRANCH
 workflows:
-  test-api:
+  test-build-and-push:
     jobs:
-      - test
+      - test-api
+      - build-image:
+          requires:
+            - test-api
+      - push-image-latest:
+          requires:
+            - build-image
+          filters:
+            branches:
+              only: master
+      - push-image-branch:
+          requires:
+            - build-image
+          filters:
+            branches:
+              ignore: master
