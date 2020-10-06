@@ -38,9 +38,9 @@ jobs:
       - setup_remote_docker
       - run: docker load -i /tmp/workspace/image.tar
       - run: |
-          echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+          echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
           docker push $IMAGE_NAME:latest
-  push-image-branch:
+  push-image-development:
     executor: shared-docker
     steps:
       - attach_workspace:
@@ -48,9 +48,9 @@ jobs:
       - setup_remote_docker
       - run: docker load -i /tmp/workspace/image.tar
       - run: |
-          echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-          docker tag $IMAGE_NAME:latest $IMAGE_NAME:$CIRCLE_BRANCH
-          docker push $IMAGE_NAME:$CIRCLE_BRANCH
+          echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
+          docker tag $IMAGE_NAME:latest $IMAGE_NAME:development
+          docker push $IMAGE_NAME:development
 workflows:
   test-build-and-push:
     jobs:
@@ -64,7 +64,7 @@ workflows:
           filters:
             branches:
               only: master
-      - push-image-branch:
+      - push-image-development:
           requires:
             - build-image
           filters:
