@@ -14,7 +14,9 @@ jobs:
       - checkout
       - node/install-packages:
           pkg-manager: yarn
-      - run: yarn test
+      - run:
+          name: Run tests
+          command: yarn test
       - store_test_results:
           path: ./test-results
       - store_artifacts:
@@ -24,33 +26,38 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - run: docker build -t $IMAGE_NAME:latest .
-      - run: docker save -o image.tar $IMAGE_NAME
+      - run:
+          name: Build docker image
+          command: docker build -t $IMAGE_NAME:latest .
+      - run:
+          name: Save docker image as .tar
+          command: docker save -o image.tar $IMAGE_NAME
       - persist_to_workspace:
           root: .
           paths:
             - ./image.tar
-  push-image-latest:
+  push-image:
     executor: shared-docker
     steps:
       - attach_workspace:
           at: /tmp/workspace
       - setup_remote_docker
-      - run: docker load -i /tmp/workspace/image.tar
-      - run: |
-          echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
-          docker push $IMAGE_NAME:latest
-  push-image-development:
-    executor: shared-docker
-    steps:
-      - attach_workspace:
-          at: /tmp/workspace
-      - setup_remote_docker
-      - run: docker load -i /tmp/workspace/image.tar
-      - run: |
-          echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
-          docker tag $IMAGE_NAME:latest $IMAGE_NAME:development
-          docker push $IMAGE_NAME:development
+      - run:
+          name: Load docker image
+          command: docker load -i /tmp/workspace/image.tar
+      - run:
+          name: Login to DockerHub
+          command: echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+      - run:
+          name: Push image to DockerHub
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]
+            then
+              docker push $IMAGE_NAME:latest
+            else
+              docker tag $IMAGE_NAME:latest $IMAGE_NAME:development
+              docker push $IMAGE_NAME:development
+            fi
 workflows:
   test-build-and-push:
     jobs:
@@ -63,15 +70,13 @@ workflows:
               only:
                 - master
                 - development
-      - push-image-latest:
+      - push-image:
+          context:
+            - dockerhub-auth
           requires:
             - build-image
           filters:
             branches:
-              only: master
-      - push-image-development:
-          requires:
-            - build-image
-          filters:
-            branches:
-              only: development
+              only:
+                - master
+                - development
