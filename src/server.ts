@@ -5,7 +5,7 @@ import initApollo from "./initApollo";
   initMongoose();
   const server = initApollo();
 
-  server.listen().then(({ url }) => {
+  server.listen({ port: 80 }).then(({ url }) => {
     console.log(`🚀  Server ready at ${url}`);
   });
 })();

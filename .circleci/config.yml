@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
   node: "circleci/node@4.1.0"
+  azure-cli: circleci/azure-cli@1.0.0
 jobs:
   test-api:
     executor: node/default
@@ -42,6 +43,13 @@ jobs:
               docker tag $IMAGE_NAME:latest $IMAGE_NAME:development
               docker push $IMAGE_NAME:development
             fi
+  deploy:
+    executor: azure-cli/azure-docker
+    steps:
+      - azure-cli/login-with-service-principal
+      - run:
+          name: Restart container
+          command: az container restart --name haikus-pra-vida-api --resource-group haikus-pra-vida
 workflows:
   test-build-and-push:
     jobs:
@@ -56,3 +64,9 @@ workflows:
               only:
                 - master
                 - development
+      - deploy:
+          requires:
+            - build-and-push-image
+          filters:
+            branches:
+              only: master
