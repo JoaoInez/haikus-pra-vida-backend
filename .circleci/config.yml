@@ -19,7 +19,7 @@ jobs:
     docker:
       - image: circleci/buildpack-deps:stretch
         environment:
-          IMAGE_NAME: joaoinez/haikus-pra-vida-backend
+          IMAGE_NAME: joaoinez/haikus-pra-vida-api
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
