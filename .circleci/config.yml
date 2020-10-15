@@ -51,9 +51,15 @@ jobs:
       - setup_remote_docker:
           version: 19.03.13
       - heroku/install
-      - heroku/push-docker-image
-      - heroku/release-docker-image:
-          process-types: ""
+      - run:
+          name: Login to Heroku Docker image registry
+          command: "heroku container:login"
+      - run:
+          name: Push to Heroku Docker image registry
+          command: heroku container:push web -a $HEROKU_APP_NAME
+      - run:
+          nane: Deploy Heroku Docker image
+          command: heroku container:release web -a $HEROKU_APP_NAME
 workflows:
   test-build-and-push:
     jobs:
