@@ -2,7 +2,6 @@ version: 2.1
 orbs:
   node: "circleci/node@4.1.0"
   heroku: circleci/heroku@1.2.2
-  docker: circleci/docker@1.5.0
 jobs:
   test-api:
     executor: node/default
@@ -45,26 +44,28 @@ jobs:
               docker tag $IMAGE_NAME:latest $IMAGE_NAME:development
               docker push $IMAGE_NAME:development
             fi
+  deploy-heroku:
+    executor: heroku/default
+    steps:
+      - checkout
+      - heroku/install
+      - heroku/push-docker-image
+      - heroku/release-docker-image
 workflows:
   test-build-and-push:
     jobs:
-      - test-api
-      - build-and-push-image:
-          context:
-            - dockerhub-auth
-          requires:
-            - test-api
+      # - test-api
+      # - build-and-push-image:
+      #     context:
+      #       - dockerhub-auth
+      #     requires:
+      #       - test-api
+      #     filters:
+      #       branches:
+      #         only:
+      #           - master
+      #           - development
+      - deploy-heroku:
           filters:
             branches:
-              only:
-                - master
-                - development
-      - heroku/push-docker-image:
-          pre-steps:
-            - docker/install-docker
-          requires:
-            - test-api
-          filters:
-            branches:
-              only:
-                - master
+              only: master
