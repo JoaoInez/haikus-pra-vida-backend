@@ -50,10 +50,8 @@ jobs:
       - checkout
       - setup_remote_docker
       - heroku/install
-      - heroku/push-docker-image:
-          process-types: "web"
-      - heroku/release-docker-image:
-          process-types: "web"
+      - heroku/push-docker-image
+      - heroku/release-docker-image
 workflows:
   test-build-and-push:
     jobs:
