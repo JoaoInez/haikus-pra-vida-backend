@@ -48,6 +48,7 @@ jobs:
     executor: heroku/default
     steps:
       - checkout
+      - setup_remote_docker
       - heroku/install
       - heroku/push-docker-image
       - heroku/release-docker-image
