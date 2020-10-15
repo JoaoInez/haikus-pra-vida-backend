@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
   node: "circleci/node@4.1.0"
+  heroku: circleci/heroku@1.2.2
 jobs:
   test-api:
     executor: node/default
@@ -56,3 +57,10 @@ workflows:
               only:
                 - master
                 - development
+      - heroku/push-docker-image:
+          requires:
+            - test-api
+          filters:
+            branches:
+              only:
+                - master
